@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Roaster</title>
+<meta name="description" content="Paste your Solana wallet. Get roasted for your memecoin trades.">
+<meta property="og:title" content="Roaster — get your wallet cooked">
+<meta property="og:description" content="Paste your Solana wallet. Get roasted for your memecoin trades.">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;700&family=Rubik+Mono+One&display=swap">
+<style>
+:root {
+  --night: #17121d; --night-2: #221b2b; --line: #3a3046; --ink-soft: #b9b0c4; --ink: #f4f0f7;
+  --paper: #f1eee6; --paper-ink: #1d1a22; --paper-mute: #7a7382;
+  --stamp: #e0306f; --gain: #1f8a5b; --loss: #c8382f;
+  --font-display: "Rubik Mono One", "Arial Black", Impact, sans-serif;
+  --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--night); color: var(--ink); }
+body { font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 32px 64px; display: flex; flex-direction: column; gap: 22px; }
+
+.brand { font-family: var(--font-display); font-size: clamp(40px, 12vw, 64px); line-height: .95; margin: 0; }
+.brand span { color: var(--stamp); }
+.tag { margin: 8px 0 0; color: var(--ink-soft); text-wrap: balance; }
+
+.booth { display: flex; flex-direction: column; gap: 14px; }
+.label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+input[type=text] { width: 100%; background: var(--night-2); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 14px; font: 500 15px var(--font-mono); }
+input:focus-visible, button:focus-visible, .heat label:focus-within, a:focus-visible { outline: 2px solid var(--stamp); outline-offset: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.heat { display: flex; gap: 8px; flex-wrap: wrap; }
+.heat label { position: relative; cursor: pointer; }
+.heat input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.heat span { display: inline-block; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); font-weight: 600; font-size: 14px; color: var(--ink-soft); }
+.heat input:checked + span { background: var(--ink); color: var(--night); border-color: var(--ink); }
+.cta { background: var(--stamp); color: #fff; border: 0; border-radius: 12px; padding: 16px 22px; font: 400 17px var(--font-display); cursor: pointer; width: 100%; transition: transform .12s ease; }
+.cta:hover { transform: translateY(-1px) rotate(-.5deg); }
+.cta:disabled { opacity: .6; cursor: wait; transform: none; }
+.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; font: 600 14px var(--font-body); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+.ghost:hover { border-color: var(--ink-soft); }
+.status { min-height: 1.5em; margin: 0; color: var(--ink-soft); font-size: 14px; }
+.status.err { color: #ff8fa8; }
+.demo { font-size: 13px; color: var(--night); background: #f5c542; padding: 8px 12px; border-radius: 8px; }
+
+.receipt { position: relative; background: var(--paper); color: var(--paper-ink); font-family: var(--font-mono); padding: 28px 22px 32px; font-size: 13px; line-height: 1.45; overflow: hidden;
+  clip-path: polygon(0 6px, 4% 0, 8% 6px, 12% 0, 16% 6px, 20% 0, 24% 6px, 28% 0, 32% 6px, 36% 0, 40% 6px, 44% 0, 48% 6px, 52% 0, 56% 6px, 60% 0, 64% 6px, 68% 0, 72% 6px, 76% 0, 80% 6px, 84% 0, 88% 6px, 92% 0, 96% 6px, 100% 0, 100% calc(100% - 6px), 96% 100%, 92% calc(100% - 6px), 88% 100%, 84% calc(100% - 6px), 80% 100%, 76% calc(100% - 6px), 72% 100%, 68% calc(100% - 6px), 64% 100%, 60% calc(100% - 6px), 56% 100%, 52% calc(100% - 6px), 48% 100%, 44% calc(100% - 6px), 40% 100%, 36% calc(100% - 6px), 32% 100%, 28% calc(100% - 6px), 24% 100%, 20% calc(100% - 6px), 16% 100%, 12% calc(100% - 6px), 8% 100%, 4% calc(100% - 6px), 0 100%); }
+.r-top { text-align: center; }
+.r-brand { font-family: var(--font-display); font-size: 24px; letter-spacing: .04em; }
+.r-sub { color: var(--paper-mute); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.sep { border: 0; border-top: 1px dashed var(--paper-mute); margin: 12px 0; }
+.meta { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; }
+.lines { display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; }
+.line { display: flex; gap: 8px; align-items: baseline; }
+.line .tk { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.line .dots { flex: 1; border-bottom: 1px dotted var(--paper-mute); transform: translateY(-3px); min-width: 10px; }
+.line .pnl { font-weight: 700; white-space: nowrap; }
+.note { color: var(--paper-mute); font-size: 11px; padding-left: 10px; margin-bottom: 4px; }
+.pos { color: var(--gain); } .neg { color: var(--loss); }
+.total { display: flex; justify-content: space-between; font-weight: 700; font-size: 15px; }
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.facts div { display: flex; justify-content: space-between; gap: 8px; }
+.facts b { font-weight: 700; }
+.score-row { display: flex; justify-content: space-between; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.bar { height: 10px; border: 1.5px solid var(--paper-ink); position: relative; background: repeating-linear-gradient(90deg, transparent 0 9px, rgba(29,26,34,.12) 9px 10px); }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--paper-ink); width: 0; transition: width .7s ease; }
+.arch { font-family: var(--font-display); font-size: 17px; line-height: 1.2; text-align: center; margin: 10px 0 0; text-wrap: balance; }
+.roast { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.roast li { display: grid; grid-template-columns: 14px 1fr; gap: 6px; }
+.roast li::before { content: ">"; font-weight: 700; color: var(--stamp); }
+.tip { font-size: 12px; background: rgba(29,26,34,.06); padding: 8px 10px; }
+.foot { text-align: center; color: var(--paper-mute); font-size: 11px; letter-spacing: .06em; }
+.stamp { position: absolute; right: 14px; top: 96px; transform: rotate(-12deg); font-family: var(--font-display); color: var(--stamp); border: 3px solid var(--stamp); border-radius: 6px; padding: 6px 10px; font-size: 24px; letter-spacing: .04em; opacity: .9; mix-blend-mode: multiply; max-width: 62%; text-align: center; line-height: 1.05; pointer-events: none; }
+.stamp.hit { animation: thunk .35s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes thunk { from { transform: rotate(-12deg) scale(1.8); opacity: 0; } to { transform: rotate(-12deg) scale(1); opacity: .9; } }
+@media (prefers-reduced-motion: reduce) { .stamp.hit { animation: none; } .bar i, .cta { transition: none; } }
+.small { font-size: 12px; color: var(--ink-soft); margin: 0; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1 class="brand">ROAST<span>ER</span></h1>
+    <p class="tag">Paste your Solana wallet. We read every trade and cook you for it.</p>
+  </header>
+
+  <form class="booth" id="booth" autocomplete="off">
+    <label class="label" for="addr">Wallet address</label>
+    <input type="text" id="addr" spellcheck="false" placeholder="e.g. 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU" maxlength="60">
+    <div class="row">
+      <span class="label" id="heatLabel">Heat</span>
+      <div class="heat" role="radiogroup" aria-labelledby="heatLabel">
+        <label><input type="radio" name="heat" value="mild"><span>Mild</span></label>
+        <label><input type="radio" name="heat" value="spicy" checked><span>Spicy</span></label>
+        <label><input type="radio" name="heat" value="nuclear"><span>Nuclear</span></label>
+      </div>
+    </div>
+    <button class="cta" id="go" type="submit">COOK ME</button>
+    <p class="status" id="status" aria-live="polite"></p>
+  </form>
+
+  <section id="result" hidden>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="demo" id="demoNote" hidden>Demo mode: these trades are made up. Add a Helius key to roast real wallets.</div>
+      <article class="receipt" id="card" aria-label="Roast receipt">
+        <div class="r-top"><div class="r-brand">ROASTER</div><div class="r-sub">On-chain trade receipt · no refunds</div></div>
+        <hr class="sep">
+        <div class="meta"><span id="wallet"></span><span id="period"></span></div>
+        <hr class="sep">
+        <div class="lines" id="lines"></div>
+        <hr class="sep">
+        <div class="total"><span>NET PNL</span><span id="total"></span></div>
+        <hr class="sep">
+        <div class="facts" id="facts"></div>
+        <hr class="sep">
+        <div class="score-row"><span>Degen score</span><span id="score"></span></div>
+        <div class="bar"><i id="bar"></i></div>
+        <p class="arch" id="arch"></p>
+        <hr class="sep">
+        <ul class="roast" id="roast"></ul>
+        <hr class="sep">
+        <div class="tip" id="tip"></div>
+        <hr class="sep">
+        <div class="foot">GET YOURS COOKED AT <span id="site"></span></div>
+        <div class="stamp" id="stamp"></div>
+      </article>
+      <div class="row">
+        <a class="ghost" id="share" target="_blank" rel="noopener">Post on X</a>
+        <button class="ghost" id="save" type="button">Save image</button>
+        <button class="ghost" id="copy" type="button">Copy text</button>
+      </div>
+      <p class="status" id="cardStatus" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <p class="small">Only public on-chain data is read. Nothing is stored and no wallet connection is needed. Just for laughs, not financial advice.</p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const LOADING = ["Reading your crimes on-chain…", "Counting your rugs…", "Measuring your paper hands…", "Interviewing your bags…", "Asking the chart about you…", "Heating the grill…"];
+  let last = null;
+  $("site").textContent = location.host.toUpperCase() || "ROASTER";
+
+  const usd = (n) => n == null ? null : (n > 0 ? "+" : n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  const sol = (n) => (n > 0 ? "+" : "") + Number(n).toFixed(2) + " SOL";
+  const money = (u, s) => usd(u) ?? sol(s);
+  const cls = (n) => n > 0 ? "pnl pos" : n < 0 ? "pnl neg" : "pnl";
+  const el = (tag, className, text) => { const e = document.createElement(tag); if (className) e.className = className; if (text != null) e.textContent = text; return e; };
+
+  function render(data) {
+    const s = data.stats, r = data.roast;
+    $("demoNote").hidden = !data.demo;
+    $("wallet").textContent = s.walletShort;
+    $("period").textContent = s.period ? `${s.period.from} → ${s.period.to}` : "";
+    const lines = $("lines"); lines.replaceChildren();
+    for (const p of s.receipt || []) {
+      const line = el("div", "line");
+      line.append(el("span", "tk", "$" + p.symbol.toUpperCase()), el("span", "dots"), el("span", cls(p.pnlSol), money(p.pnlUsd, p.pnlSol)));
+      const status = p.status === "rugged" ? "rugged ☠" : p.status === "holding" ? "still holding" : p.held ? `sold after ${p.held}` : "sold";
+      const mult = p.multiple != null ? ` · ${p.multiple}x` : "";
+      lines.append(line, el("div", "note", status + mult));
+    }
+    $("total").textContent = money(s.totalPnlUsd, s.totalPnlSol);
+    $("total").className = s.totalPnlSol > 0 ? "pos" : s.totalPnlSol < 0 ? "neg" : "";
+    const facts = $("facts"); facts.replaceChildren();
+    const fact = (k, v) => { const d = el("div"); d.append(el("span", null, k), el("b", null, v)); facts.append(d); };
+    fact("Trades", String(s.trades));
+    fact("Coins", String(s.coinsTraded));
+    fact("Win rate", s.winRate + "%");
+    fact("Rugged", String(s.ruggedCount));
+    fact("Fees paid", s.feesUsd != null ? "$" + s.feesUsd : s.feesSol + " SOL");
+    fact("Median hold", s.medianHold || "–");
+    $("score").textContent = r.score + " / 100";
+    $("bar").style.width = "0%"; requestAnimationFrame(() => { $("bar").style.width = r.score + "%"; });
+    $("arch").textContent = r.archetype;
+    const ul = $("roast"); ul.replaceChildren(...r.lines.map((l) => el("li", null, l)));
+    const tip = $("tip"); tip.replaceChildren(el("b", null, "ACTUAL ADVICE: "), document.createTextNode(r.tip));
+    const st = $("stamp"); st.textContent = r.stamp; st.classList.remove("hit"); void st.offsetWidth; st.classList.add("hit");
+
+    const tweet = `I got roasted on Roaster 🔥\nDegen score: ${r.score}/100 · "${r.archetype}"\n\n"${r.lines[0]}"\n\nGet cooked:`;
+    $("share").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweet) + "&url=" + encodeURIComponent(location.origin);
+    $("result").hidden = false;
+    last = data;
+  }
+
+  $("booth").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const address = $("addr").value.trim();
+    const heat = (document.querySelector('input[name="heat"]:checked') || {}).value || "spicy";
+    $("status").className = "status";
+    $("go").disabled = true;
+    let i = 0; $("status").textContent = LOADING[0];
+    const ticker = setInterval(() => { i = (i + 1) % LOADING.length; $("status").textContent = LOADING[i]; }, 1600);
+    try {
+      const res = await fetch("/api/roast", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ address, heat }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Something went wrong. Try again.");
+      render(data);
+      $("status").textContent = "Served.";
+      $("result").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    } catch (err) {
+      $("status").className = "status err";
+      $("status").textContent = err.message || "Something went wrong. Try again.";
+    } finally {
+      clearInterval(ticker);
+      $("go").disabled = false;
+    }
+  });
+
+  $("copy").addEventListener("click", async () => {
+    if (!last) return;
+    const r = last.roast;
+    const txt = `ROASTER · degen score ${r.score}/100 · ${r.archetype}\n\n${r.lines.map((l) => "> " + l).join("\n")}\n\nVerdict: ${r.stamp}\n${location.origin}`;
+    try { await navigator.clipboard.writeText(txt); $("cardStatus").textContent = "Copied."; }
+    catch { $("cardStatus").textContent = "Copy was blocked. Select the text on the receipt instead."; }
+  });
+
+  $("save").addEventListener("click", async () => {
+    if (!window.html2canvas) { $("cardStatus").textContent = "Take a screenshot instead."; return; }
+    $("cardStatus").textContent = "Printing…";
+    try {
+      const canvas = await window.html2canvas($("card"), { backgroundColor: "#17121d", scale: 2 });
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "roaster-" + (last ? last.stats.walletShort.replace(/[^a-z0-9]/gi, "") : "card") + ".png";
+      document.body.append(a); a.click(); a.remove();
+      $("cardStatus").textContent = "Saved.";
+    } catch { $("cardStatus").textContent = "Couldn't make the image. Take a screenshot instead."; }
+  });
+})();
+</script>
+</body>
+</html>
