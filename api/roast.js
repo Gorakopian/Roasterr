@@ -1,8 +1,8 @@
 // POST /api/roast  { address, heat }  →  { stats, roast, demo }
 import { isSolanaAddress, buildPositions, summarize } from "../lib/analyze.js";
-import { fetchHistory, fetchTokenInfo, fetchSolPrice } from "../lib/helius.js";
+import { fetchHistory, fetchTokenInfo, fetchSolPrice, fetchJupiterPrices } from "../lib/helius.js";
 import { roastWithClaude, templateRoast } from "../lib/roast.js";
-import { findFades } from "../lib/timing.js";
+import { findFades, fetchTokensMulti } from "../lib/timing.js";
 import { DEMO_STATS } from "../lib/demo.js";
 
 const cache = new Map(); // address -> { at, stats }  (lives as long as the server instance)
@@ -29,12 +29,32 @@ export async function getStats(address, heliusKey) {
   if (hit && Date.now() - hit.at < TTL) return hit.stats;
   const txs = await fetchHistory(address, heliusKey, Number(process.env.HISTORY_PAGES) || 5);
   const built = buildPositions(txs, address);
-  const info = await fetchTokenInfo(built.positions.map((p) => p.mint), heliusKey);
+  const mints = built.positions.map((p) => p.mint);
+  const debug = { txs: txs.length, trades: built.swaps, coins: mints.length };
+
+  // Names from Helius; current prices from Jupiter, then GeckoTerminal, then Helius
+  const [info, jup, pools] = await Promise.all([
+    fetchTokenInfo(mints, heliusKey).catch(() => ({})),
+    fetchJupiterPrices(mints).catch(() => ({})),
+    fetchTokensMulti(mints).catch((e) => { debug.poolError = String(e.message || e).slice(0, 40); return {}; }),
+  ]);
+  for (const m of mints) {
+    const price = jup[m] ?? pools[m]?.priceUsd ?? info[m]?.price ?? null;
+    info[m] = { ...(info[m] || {}), price };
+  }
+  debug.priced = mints.filter((m) => info[m].price > 0).length;
+  debug.withPool = mints.filter((m) => pools[m]?.pool).length;
+
   const solPrice = await fetchSolPrice(heliusKey, info);
   const stats = summarize(built, info, solPrice, address);
+
   // Timing mistakes need price history; give it at most 25 seconds, the roast works without it
-  const timeout = new Promise((resolve) => setTimeout(() => resolve([]), 25000));
-  stats.fades = await Promise.race([findFades(built.positions, info, solPrice).catch(() => []), timeout]);
+  const timeout = new Promise((resolve) => setTimeout(() => { debug.timedOut = true; resolve([]); }, 25000));
+  stats.fades = await Promise.race([
+    findFades(built.positions, info, solPrice, { pools, debug }).catch((e) => { debug.fadeError = String(e.message || e).slice(0, 40); return []; }),
+    timeout,
+  ]);
+  stats.debug = debug;
   cache.set(address, { at: Date.now(), stats });
   if (cache.size > 500) cache.delete(cache.keys().next().value);
   return stats;

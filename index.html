@@ -149,6 +149,7 @@ input:focus-visible, button:focus-visible, .heat label:focus-within, a:focus-vis
         <button class="ghost" id="copy" type="button">Copy text</button>
       </div>
       <p class="status" id="cardStatus" aria-live="polite"></p>
+      <pre id="debug" class="small" style="white-space:pre-wrap;overflow-wrap:anywhere" hidden></pre>
     </div>
   </section>
 
@@ -216,6 +217,11 @@ input:focus-visible, button:focus-visible, .heat label:focus-within, a:focus-vis
     const tweet = `I got roasted on Roaster 🔥\nDegen score: ${r.score}/100 · "${r.archetype}"\n\n"${r.lines[0]}"\n\nGet cooked:`;
     $("share").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweet) + "&url=" + encodeURIComponent(location.origin);
     $("result").hidden = false;
+    if (/[?&]debug\b/.test(location.search)) {
+      const d = s.debug || {};
+      $("debug").textContent = "DEBUG " + JSON.stringify({ ...d, ai: data.ai, fades: (s.fades || []).length, paperHands: !!s.paperHands });
+      $("debug").hidden = false;
+    }
     last = data;
   }
 
