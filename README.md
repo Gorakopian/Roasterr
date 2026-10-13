@@ -12,7 +12,7 @@ Paste a Solana wallet address, Roaster reads its memecoin trades and roasts you 
 | `lib/helius.js` | Fetches the wallet history, token names and prices |
 | `lib/roast.js` | The roast prompt for Claude, plus a backup roast if Claude isn't set up |
 | `lib/demo.js` | Fake wallet used in demo mode |
-| `server.js` | Lets you run it on your own computer |
+| `scripts/dev.js` | Lets you run it on your own computer (not used by Vercel) |
 
 ## The two keys you need
 

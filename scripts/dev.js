@@ -1,12 +1,15 @@
-// Local test server: `npm run dev`, then open http://localhost:3000
-// Reads keys from a .env file next to this one, if present.
+// Local test server only (Vercel does not use this file): `npm run dev`, then open http://localhost:3000
+// Reads keys from a .env file in the project folder, if present.
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
-import handler from "./api/roast.js";
+import handler from "../api/roast.js";
 
-if (existsSync(".env")) {
-  for (const line of readFileSync(".env", "utf8").split(/\r?\n/)) {
+const root = new URL("../", import.meta.url);
+const envPath = new URL(".env", root);
+
+if (existsSync(envPath)) {
+  for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z_]+)\s*=\s*(.*)\s*$/);
     if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
   }
@@ -18,7 +21,7 @@ http.createServer(async (req, res) => {
     if (req.url.startsWith("/api/roast")) return handler(req, res);
     if (req.url === "/" || req.url.startsWith("/?")) {
       res.setHeader("content-type", "text/html; charset=utf-8");
-      return res.end(await readFile("index.html"));
+      return res.end(await readFile(new URL("index.html", root)));
     }
     res.statusCode = 404; res.end("Not found");
   } catch (e) {
