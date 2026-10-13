@@ -2,6 +2,7 @@
 import { isSolanaAddress, buildPositions, summarize } from "../lib/analyze.js";
 import { fetchHistory, fetchTokenInfo, fetchSolPrice } from "../lib/helius.js";
 import { roastWithClaude, templateRoast } from "../lib/roast.js";
+import { findFades } from "../lib/timing.js";
 import { DEMO_STATS } from "../lib/demo.js";
 
 const cache = new Map(); // address -> { at, stats }  (lives as long as the server instance)
@@ -31,6 +32,9 @@ export async function getStats(address, heliusKey) {
   const info = await fetchTokenInfo(built.positions.map((p) => p.mint), heliusKey);
   const solPrice = await fetchSolPrice(heliusKey, info);
   const stats = summarize(built, info, solPrice, address);
+  // Timing mistakes need price history; give it at most 25 seconds, the roast works without it
+  const timeout = new Promise((resolve) => setTimeout(() => resolve([]), 25000));
+  stats.fades = await Promise.race([findFades(built.positions, info, solPrice).catch(() => []), timeout]);
   cache.set(address, { at: Date.now(), stats });
   if (cache.size > 500) cache.delete(cache.keys().next().value);
   return stats;

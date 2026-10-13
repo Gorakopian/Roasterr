@@ -64,6 +64,14 @@ input:focus-visible, button:focus-visible, .heat label:focus-within, a:focus-vis
 .note { color: var(--paper-mute); font-size: 11px; padding-left: 10px; margin-bottom: 4px; }
 .pos { color: var(--gain); } .neg { color: var(--loss); }
 .total { display: flex; justify-content: space-between; font-weight: 700; font-size: 15px; }
+.fade-head { display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; letter-spacing: .06em; margin-bottom: 6px; }
+.fade-head span:last-child { color: var(--loss); }
+.fades { display: flex; flex-direction: column; gap: 6px; font-variant-numeric: tabular-nums; }
+.fade { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: baseline; }
+.fade .kind { grid-column: 1 / -1; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--stamp); font-weight: 700; }
+.fade .tk { font-weight: 700; }
+.fade .what { color: var(--paper-ink); min-width: 0; overflow-wrap: anywhere; }
+.fade .cost { font-weight: 700; color: var(--loss); white-space: nowrap; }
 .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 12px; font-variant-numeric: tabular-nums; }
 .facts div { display: flex; justify-content: space-between; gap: 8px; }
 .facts b { font-weight: 700; }
@@ -117,6 +125,11 @@ input:focus-visible, button:focus-visible, .heat label:focus-within, a:focus-vis
         <hr class="sep">
         <div class="total"><span>NET PNL</span><span id="total"></span></div>
         <hr class="sep">
+        <div id="fadeBlock" hidden>
+          <div class="fade-head"><span>FADED</span><span id="fadeTotal"></span></div>
+          <div class="fades" id="fades"></div>
+          <hr class="sep">
+        </div>
         <div class="facts" id="facts"></div>
         <hr class="sep">
         <div class="score-row"><span>Degen score</span><span id="score"></span></div>
@@ -171,6 +184,20 @@ input:focus-visible, button:focus-visible, .heat label:focus-within, a:focus-vis
     }
     $("total").textContent = money(s.totalPnlUsd, s.totalPnlSol);
     $("total").className = s.totalPnlSol > 0 ? "pos" : s.totalPnlSol < 0 ? "neg" : "";
+    const KIND = { sold_early: "Sold too early", sold_late: "Sold too late", held_too_long: "Round-tripped", bought_top: "Bought the top" };
+    const fl = s.fades || [];
+    const fbox = $("fades"); fbox.replaceChildren();
+    let missed = 0;
+    for (const f of fl) {
+      const row = el("div", "fade");
+      const lost = f.missedUsd || f.gaveBackUsd || 0;
+      missed += lost;
+      row.append(el("span", "kind", KIND[f.kind] || "Faded"), el("span", "tk", "$" + String(f.symbol).toUpperCase()),
+        el("span", "what", f.what || ""), el("span", "cost", lost ? "-$" + lost.toLocaleString("en-US") : f.dropPct ? "-" + f.dropPct + "%" : ""));
+      fbox.append(row);
+    }
+    $("fadeTotal").textContent = missed ? "LEFT ON TABLE -$" + missed.toLocaleString("en-US") : "";
+    $("fadeBlock").hidden = !fl.length;
     const facts = $("facts"); facts.replaceChildren();
     const fact = (k, v) => { const d = el("div"); d.append(el("span", null, k), el("b", null, v)); facts.append(d); };
     fact("Trades", String(s.trades));

@@ -10,6 +10,7 @@ Paste a Solana wallet address, Roaster reads its memecoin trades and roasts you 
 | `api/roast.js` | The server part: reads the wallet, works out the stats, asks Claude for the roast |
 | `lib/analyze.js` | Turns raw transactions into profit/loss per coin, hold times, rugs, paper hands |
 | `lib/helius.js` | Fetches the wallet history, token names and prices |
+| `lib/timing.js` | Finds timing mistakes: sold too early, sold too late, round trips, bought the top |
 | `lib/roast.js` | The roast prompt for Claude, plus a backup roast if Claude isn't set up |
 | `lib/demo.js` | Fake wallet used in demo mode |
 | `scripts/dev.js` | Lets you run it on your own computer (not used by Vercel) |
@@ -53,5 +54,6 @@ You can connect your own domain later in Vercel under **Settings → Domains**.
 - It only reads public blockchain data. Nobody connects a wallet and nothing is stored.
 - Trades are coins swapped against SOL, USDC or USDT. Coin-to-coin swaps and airdrops are skipped.
 - Profit/loss for coins still held uses today's price. A coin with no price is counted as dead.
+- Timing mistakes use free price charts from GeckoTerminal (no key needed). Only the 6 biggest positions are checked, and if GeckoTerminal is busy the roast simply skips this part.
 - The keys stay on the server. Never put them in `index.html`.
 - Before you promote it widely, add a rate limit so nobody can spam roasts on your Anthropic credit.
